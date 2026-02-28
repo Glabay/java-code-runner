@@ -9,7 +9,7 @@ RUN addgroup -S appgroup \
     -S midnightApp \
     -G appgroup
 
-COPY target/*.jar app.jar
+COPY target/java-code-runner.jar app.jar
 USER midnightApp
 
 ENTRYPOINT ["java", "-Xms64m", "-Xmx256m", "-XX:+ExitOnOutOfMemoryError", "-XX:+UseCompactObjectHeaders", "-jar", "app.jar" ]
