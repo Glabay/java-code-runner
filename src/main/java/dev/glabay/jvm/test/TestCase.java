@@ -1,0 +1,12 @@
+package dev.glabay.jvm.test;
+
+/**
+ * @author Glabay | Glabay-Studios
+ * @project JavaDuel
+ * @social Discord: Glabay
+ * @since 2026-02-26
+ */
+public record TestCase(
+    String input,
+    String expected
+) {}
