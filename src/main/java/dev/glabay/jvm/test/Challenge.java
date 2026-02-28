@@ -1,6 +1,4 @@
-package dev.glabay.challenges;
-
-import dev.glabay.jvm.test.TestCase;
+package dev.glabay.jvm.test;
 
 import java.util.List;
 

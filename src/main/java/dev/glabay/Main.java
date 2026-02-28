@@ -2,9 +2,6 @@ package dev.glabay;
 
 import dev.glabay.jvm.InMemoryCompiler;
 
-import java.nio.file.Files;
-import java.nio.file.Paths;
-
 /**
  * @author Glabay | Glabay-Studios
  * @project java-code-runner
@@ -13,14 +10,9 @@ import java.nio.file.Paths;
  */
 public class Main {
 
-    void main(String... args) {
-        var challengeId = args[0];
-        var userId = args[1];
+    void main() {
         try {
-            var executionRoot = Paths.get("/executions");
-            var executionDir = Files.createTempDirectory(executionRoot, "exec-".concat(userId));
-            var result = InMemoryCompiler.compileAndRun(userId, challengeId);
-            // TODO: save this to a temporary file
+            InMemoryCompiler.compileAndRun();
         }
         catch (Exception e) {
             e.printStackTrace(System.err);

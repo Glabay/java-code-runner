@@ -1,7 +1,9 @@
 package dev.glabay.jvm.test;
 
-import dev.glabay.challenges.ChallengeManager;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 
+import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.concurrent.Executors;
@@ -18,22 +20,27 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class JudgementEngine {
 
-    public static TestResult runUnitTest(Class<?> clazz, String challengeId) {
-        var method = validateSolveMethod(clazz);
-        var cachedChallenge = ChallengeManager.getChallengeById(challengeId);
-        var testCases = cachedChallenge.visibleTestCases();
-            testCases.addAll(cachedChallenge.hiddenTestCases());
-        var passed = new AtomicInteger(0);
+    private static JsonMapper getMapper() {
+        return JsonMapper.builder()
+            .build();
+    }
 
+    public static void runUnitTest(Class<?> clazz) {
         try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
+            var challenge = new File("sandbox/challenge.json");
+            var cachedChallenge = getMapper().readValue(challenge, Challenge.class);
+            var testCases = cachedChallenge.visibleTestCases();
+                testCases.addAll(cachedChallenge.hiddenTestCases());
+            var passed = new AtomicInteger(0);
+
             for (var test : testCases) {
                 Future<?> future = executor.submit(() -> {
                     var instance = clazz.getDeclaredConstructor().newInstance();
+                    var method = validateSolveMethod(clazz);
                     return (String) method.invoke(instance, test.input());
                 });
                 try {
                     var result = future.get(2, TimeUnit.SECONDS);
-
                     if (test.expected().equals(result)) {
                         passed.getAndIncrement();
                     }
@@ -45,8 +52,13 @@ public class JudgementEngine {
                     e.printStackTrace(System.err);
                 }
             }
+            var result = new TestResult(passed.get(), testCases.size());
+            var resultFile = new File("sandbox/result.json");
+            getMapper().writerWithDefaultPrettyPrinter().writeValue(resultFile, result);
         }
-        return new TestResult(passed.get(), testCases.size());
+        catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private static Method validateSolveMethod(Class<?> clazz) {

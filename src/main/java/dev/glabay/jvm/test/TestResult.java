@@ -9,8 +9,4 @@ package dev.glabay.jvm.test;
 public record TestResult(
     int passed,
     int total
-) {
-    public boolean allPassed() {
-        return passed == total;
-    }
-}
+) {}
