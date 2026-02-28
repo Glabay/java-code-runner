@@ -12,7 +12,7 @@ import java.net.URI;
 public class StringJavaFileObject extends SimpleJavaFileObject {
     private final String source;
 
-    protected StringJavaFileObject(String className, String source) {
+    public StringJavaFileObject(String className, String source) {
         super(URI.create("string:///" + className.replace('.', '/') + Kind.SOURCE.extension), Kind.SOURCE);
         this.source = source;
     }

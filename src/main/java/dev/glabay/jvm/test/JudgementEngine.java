@@ -2,10 +2,10 @@ package dev.glabay.jvm.test;
 
 import com.fasterxml.jackson.databind.json.JsonMapper;
 
-import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.nio.file.Path;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -27,7 +27,7 @@ public class JudgementEngine {
 
     public static void runUnitTest(Class<?> clazz) {
         try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
-            var challenge = new File("sandbox/challenge.json");
+            var challenge = Path.of("/sandbox", "challenge.json").toFile();
             var cachedChallenge = getMapper().readValue(challenge, Challenge.class);
             var testCases = cachedChallenge.visibleTestCases();
                 testCases.addAll(cachedChallenge.hiddenTestCases());
@@ -53,7 +53,7 @@ public class JudgementEngine {
                 }
             }
             var result = new TestResult(passed.get(), testCases.size());
-            var resultFile = new File("sandbox/result.json");
+            var resultFile = Path.of("/sandbox", "result.json").toFile();
             getMapper().writerWithDefaultPrettyPrinter().writeValue(resultFile, result);
         }
         catch (IOException e) {

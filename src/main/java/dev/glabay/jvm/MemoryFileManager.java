@@ -17,7 +17,7 @@ public class MemoryFileManager extends ForwardingJavaFileManager<JavaFileManager
 
     private final Map<String, ByteArrayJavaFileObject> compiledClasses = new HashMap<>();
 
-    protected MemoryFileManager(JavaFileManager fileManager) {
+    public MemoryFileManager(JavaFileManager fileManager) {
         super(fileManager);
     }
 
