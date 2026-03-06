@@ -27,12 +27,12 @@ public class JudgementEngine {
             .build();
     }
 
-    public static void runUnitTest(Class<?> clazz) {
+    public static void runUnitTest(Class<?> clazz, String fileName) {
         try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
             var method = validateSolveMethod(clazz);
             var returnType = method.getReturnType();
 
-            var challenge = Path.of("./sandbox", "challenge.json").toFile();
+            var challenge = Path.of("/sandbox", fileName).toFile();
             var cachedChallenge = getMapper().readValue(challenge, Challenge.class);
 
             var testCases = cachedChallenge.visibleTestCases();
@@ -61,7 +61,7 @@ public class JudgementEngine {
                 }
             }
             var result = new TestResult(passed.get(), testCases.size());
-            var resultFile = Path.of("./sandbox", "result.json").toFile();
+            var resultFile = Path.of("/sandbox", "result.json").toFile();
             getMapper().writerWithDefaultPrettyPrinter().writeValue(resultFile, result);
         }
         catch (IOException e) {

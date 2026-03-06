@@ -22,7 +22,7 @@ public class Main {
     private static final String CLASS_NAME = "Challenge";
     private static final DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<>();
 
-    void main() {
+    void main(String... args) {
         try {
             var compiler = ToolProvider.getSystemJavaCompiler();
             if (compiler == null) {
@@ -30,7 +30,7 @@ public class Main {
             }
             var standardFileManager = compiler.getStandardFileManager(diagnostics, null, null);
             var fileManager = new MemoryFileManager(standardFileManager);
-            var file = Path.of("./sandbox", "Challenge.java");
+            var file = Path.of("/sandbox", args[0]);
             var sourceObject = new StringJavaFileObject(CLASS_NAME, Files.readString(file));
             var task = compiler.getTask(
                 null,
@@ -52,7 +52,7 @@ public class Main {
 
             var classLoader = new MemoryClassLoader(fileManager.getAllClassBytes());
             var clazz = classLoader.loadClass(CLASS_NAME);
-            JudgementEngine.runUnitTest(clazz);
+            JudgementEngine.runUnitTest(clazz, args[1]);
         }
         catch (Exception e) {
             e.printStackTrace(System.err);
