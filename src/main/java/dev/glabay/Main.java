@@ -30,7 +30,7 @@ public class Main {
             }
             var standardFileManager = compiler.getStandardFileManager(diagnostics, null, null);
             var fileManager = new MemoryFileManager(standardFileManager);
-            var file = Path.of("/sandbox", "Challenge.java");
+            var file = Path.of("./sandbox", "Challenge.java");
             var sourceObject = new StringJavaFileObject(CLASS_NAME, Files.readString(file));
             var task = compiler.getTask(
                 null,

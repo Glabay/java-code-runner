@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.nio.file.Path;
+import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -27,21 +29,27 @@ public class JudgementEngine {
 
     public static void runUnitTest(Class<?> clazz) {
         try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
-            var challenge = Path.of("/sandbox", "challenge.json").toFile();
+            var method = validateSolveMethod(clazz);
+            var returnType = method.getReturnType();
+
+            var challenge = Path.of("./sandbox", "challenge.json").toFile();
             var cachedChallenge = getMapper().readValue(challenge, Challenge.class);
+
             var testCases = cachedChallenge.visibleTestCases();
                 testCases.addAll(cachedChallenge.hiddenTestCases());
+
             var passed = new AtomicInteger(0);
 
             for (var test : testCases) {
                 Future<?> future = executor.submit(() -> {
                     var instance = clazz.getDeclaredConstructor().newInstance();
-                    var method = validateSolveMethod(clazz);
-                    return (String) method.invoke(instance, test.input());
+                    return method.invoke(instance, test.input());
                 });
                 try {
                     var result = future.get(2, TimeUnit.SECONDS);
-                    if (test.expected().equals(result)) {
+                    var expectedValue = getMapper().convertValue(test.expected(), returnType);
+
+                    if (Objects.equals(expectedValue, result)) {
                         passed.getAndIncrement();
                     }
                 }
@@ -53,7 +61,7 @@ public class JudgementEngine {
                 }
             }
             var result = new TestResult(passed.get(), testCases.size());
-            var resultFile = Path.of("/sandbox", "result.json").toFile();
+            var resultFile = Path.of("./sandbox", "result.json").toFile();
             getMapper().writerWithDefaultPrettyPrinter().writeValue(resultFile, result);
         }
         catch (IOException e) {
@@ -61,14 +69,22 @@ public class JudgementEngine {
         }
     }
 
+    private static final Set<Class<?>> SUPPORTED_TYPES = Set.of(
+        String.class,
+        int.class,
+        boolean.class,
+        long.class,
+        double.class
+    );
+
     private static Method validateSolveMethod(Class<?> clazz) {
         try {
             Method method = clazz.getDeclaredMethod("solve", String.class);
-            if (!method.getReturnType().equals(String.class)) {
-                throw new IllegalArgumentException("Method solve(String) must return String");
+            if (!SUPPORTED_TYPES.contains(method.getReturnType())) {
+                throw new IllegalArgumentException("Method solve(String) must return one of: " + SUPPORTED_TYPES);
             }
             if (!Modifier.isPublic(method.getModifiers())) {
-                throw new IllegalArgumentException("Method solve(String) must be public");
+                throw new IllegalArgumentException("Method solve(String input) must be public");
             }
             return method;
         }
